@@ -52,12 +52,13 @@ void loop() {
   }
 
   if (checkEvents && millis() > toneEvents[nextEvent].timestamp + lastEvent) {
-    tones[toneEvents[nextEvent].toneNumber].setFreq(toneEvents[nextEvent].frequency*2 );
+    tones[toneEvents[nextEvent].toneNumber].setFreq(toneEvents[nextEvent].frequency*TRANSPOSE);
     nextEvent++;
-    lastEvent = millis();
+    if (!ABSOLUTE_TIMES) lastEvent = millis();
     if (nextEvent == MAX_TONE_EVENTS) {
       if (LOOP_EVENTS) {
         nextEvent = 0;
+        if (ABSOLUTE_TIMES) lastEvent = millis();
         return;
       }
       checkEvents = false;
