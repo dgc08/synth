@@ -3,9 +3,11 @@
 
 #include "Tone.h"
 
-// No implementation needed for the default constructor
+Tone::Tone() {
+  setFreq(0); // Call setup with frequency 0
+}
 
-void Tone::setup(int frequency) {
+void Tone::setFreq(int frequency) {
   state = false;
   if (frequency == 0) {
     activated = false;
@@ -16,10 +18,10 @@ void Tone::setup(int frequency) {
   interval = 500000 / frequency;
 }
 
-bool Tone::getState(bool allowed) {
-  if ( (last + interval) < micros() && activated) {
+bool Tone::getState(bool allowed, unsigned long microsecs) {
+  if ( (last + interval) < microsecs && activated) {
     state = !state;
-    last = micros();
+    last = microsecs;
   }
   return state && allowed;
 }

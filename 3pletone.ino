@@ -1,44 +1,50 @@
 #include <rom/ets_sys.h>
 
 #include "Tone.h"
+#include "ToneEvent.h"
 
-const int TONE_OUTPUT_PIN = 26;
-Tone tone1;
-Tone tone2;
+#define TONE_OUTPUT_PIN 26
+#define TONE_COUNT 3
 
-bool tone1a;
-bool tone2a;
+Tone tones[TONE_COUNT];
+bool toneAllowed[TONE_COUNT];
+
+#define MAX_TONE_EVENTS 3
+ToneEvent toneEvents[MAX_TONE_EVENTS] = {};
 
 void setup() {
-  // ledcAttachPin(uint8_t pin, uint8_t channel);
   pinMode(TONE_OUTPUT_PIN, OUTPUT);
   Serial.begin(115200);
 
-  tone1.setup(220);
-  tone2.setup(146);
-  tone1a = true;
-  tone2a = false;
+  
+  tones[0].setFreq(147);
+  tones[1].setFreq(175);
+  tones[2].setFreq(220);
+  
 }
 
 void loop() {
-  if (tone1.getState(tone1a) || tone2.getState(tone2a)) {
-    digitalWrite(TONE_OUTPUT_PIN, HIGH);
-    //Serial.println(1);
-  }
-  else {
-    digitalWrite(TONE_OUTPUT_PIN, LOW);
-    //Serial.println(0);
-  }
+  for (int j = 0; j < TONE_COUNT; j++) {
+    if (tones[j].activated == false) {
+      continue;
+    }
+    toneAllowed[j] = true;
+    
+    bool anyToneActive = false;
 
-  tone2a = !tone2a;
-  tone1a = !tone1a;
+    unsigned long microsecs = micros();
+    for (int i = 0; i < TONE_COUNT; i++) {
+      if (tones[i].getState(toneAllowed[i], microsecs)) {
+        anyToneActive = true;
+        break;
+      }
+    }
   
-  /*
-  // Plays the middle C scale
-  ledcWriteTone(TONE_PWM_CHANNEL, BASE_HZ);
-  //ledcWrite(TONE_PWM_CHANNEL, 255);
-  ets_delay_us(500000/HZ);
-  ledcWrite(TONE_PWM_CHANNEL, 0);
-  ets_delay_us(500000/HZ);
-  */
+    if (anyToneActive) {
+      digitalWrite(TONE_OUTPUT_PIN, HIGH);
+    } else {
+      digitalWrite(TONE_OUTPUT_PIN, LOW);
+    }
+    toneAllowed[j] = false;
+  }
 }

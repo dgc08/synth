@@ -4,12 +4,12 @@
 class Tone {
 private:
   int interval;
-  long long last;
+  unsigned long last;
   bool state;
 public:
-  // No constructor needed for this example
-  void setup(int frequency);
-  bool getState(bool allowed);
+  Tone();
+  void setFreq(int frequency);
+  bool getState(bool allowed, unsigned long microsecs);
   bool activated;
 };
 
