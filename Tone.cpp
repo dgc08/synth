@@ -9,7 +9,8 @@ Tone::Tone() {
 
 void Tone::setFreq(int frequency) {
   state = false;
-  if (frequency == 0) {
+  freq = frequency;
+  if (frequency <= 0) {
     activated = false;
     return;
   }

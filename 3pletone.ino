@@ -1,31 +1,34 @@
 #include <rom/ets_sys.h>
 
 #include "Tone.h"
-#include "ToneEvent.h"
+#include "ToneEvents.h"
 
 #define TONE_OUTPUT_PIN 26
-#define TONE_COUNT 3
+#define TONE_COUNT 8
 
 Tone tones[TONE_COUNT];
 bool toneAllowed[TONE_COUNT];
 
-#define MAX_TONE_EVENTS 3
-ToneEvent toneEvents[MAX_TONE_EVENTS] = {};
+
+bool checkEvents = true;
+int nextEvent = 0;
+unsigned long lastEvent = 0;
 
 void setup() {
   pinMode(TONE_OUTPUT_PIN, OUTPUT);
   Serial.begin(115200);
 
-  
+  /*
   tones[0].setFreq(147);
   tones[1].setFreq(175);
   tones[2].setFreq(220);
+  */
   
 }
 
 void loop() {
   for (int j = 0; j < TONE_COUNT; j++) {
-    if (tones[j].activated == false) {
+    if (tones[j].activated == false && tones[j].freq == 0) {
       continue;
     }
     toneAllowed[j] = true;
@@ -46,5 +49,18 @@ void loop() {
       digitalWrite(TONE_OUTPUT_PIN, LOW);
     }
     toneAllowed[j] = false;
+  }
+
+  if (checkEvents && millis() > toneEvents[nextEvent].timestamp + lastEvent) {
+    tones[toneEvents[nextEvent].toneNumber].setFreq(toneEvents[nextEvent].frequency*2 );
+    nextEvent++;
+    lastEvent = millis();
+    if (nextEvent == MAX_TONE_EVENTS) {
+      if (LOOP_EVENTS) {
+        nextEvent = 0;
+        return;
+      }
+      checkEvents = false;
+    }
   }
 }

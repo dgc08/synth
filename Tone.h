@@ -11,6 +11,7 @@ public:
   void setFreq(int frequency);
   bool getState(bool allowed, unsigned long microsecs);
   bool activated;
+  int freq;
 };
 
 #endif
