@@ -4,7 +4,7 @@
 #include "ToneEvents.h"
 
 #define TONE_OUTPUT_PIN 26
-#define TONE_COUNT 8
+#define TONE_COUNT 4
 
 Tone tones[TONE_COUNT];
 bool toneAllowed[TONE_COUNT];
