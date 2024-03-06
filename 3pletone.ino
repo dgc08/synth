@@ -2,7 +2,7 @@
 #include "ToneEvents.h"
 
 #define TONE_OUTPUT_PIN 26
-#define TONE_COUNT 8
+#define TONE_COUNT 10
 
 Tone tones[TONE_COUNT];
 bool toneAllowed[TONE_COUNT];
@@ -15,7 +15,18 @@ unsigned long lastEvent = 0;
 void setup() {
   pinMode(TONE_OUTPUT_PIN, OUTPUT);
   Serial.begin(115200);
-
+  
+  #if SERIAL_MODE
+  Serial.println("Serial Mode activated. Awaiting Instructions...");
+  #else
+  if(MAX_TONE_EVENTS == 0) {
+    Serial.println("Serial Mode deactivated, but no Instruction Sequence (aka MIDI Sequence) defined. Will effectively do nothing");
+  }
+  else {
+    Serial.print("Instruction Sequence (aka MIDI Sequence) of length ");
+    Serial.println(MAX_TONE_EVENTS);
+  }
+  #endif
   /*
   tones[0].setFreq(147);
   tones[1].setFreq(175);
@@ -48,7 +59,19 @@ void loop() {
     }
     toneAllowed[j] = false;
   }
+#if SERIAL_MODE
+  if (Serial.available() > 0) {
+    String data_string = Serial.readStringUntil('\n');
+    data_string.trim();
 
+    // Split data string and convert to integers
+    int comma_index = data_string.indexOf(',');
+    int channel = data_string.substring(0, comma_index).toInt();
+    int freq = data_string.substring(comma_index + 1).toInt();
+
+    tones[channel].setFreq(freq*TRANSPOSE);
+  }
+#else
   if (checkEvents && millis() > toneEvents[nextEvent].timestamp + lastEvent) {
     tones[toneEvents[nextEvent].toneNumber].setFreq(toneEvents[nextEvent].frequency*TRANSPOSE);
     nextEvent++;
@@ -69,4 +92,5 @@ void loop() {
       checkEvents = false;
     }
   }
+ #endif
 }
