@@ -3,8 +3,8 @@ from mido import MidiFile
 def midi_to_frequency(note_number):
   return int(2 ** ((note_number - 69) / 12) * 440)
 
-tempo = 500000
-#ticks_per_beat = 192
+tempo = 60000000 / int(input("BPM>"))
+#ticks_per_beat = 480
 ticks_per_beat = int(input("Ticks per beat>"))
 polyphony = 64
 
@@ -15,13 +15,17 @@ notes = []
 
 for track in midi_file.tracks:
   for message in track:
-    if message.type == "set_tempo":
+    if message.type == "set_tempo" and tempo == 0:
       tempo = message.tempo
       print(tempo)
+    elif message.type == "time_signature":
+      pass
+      #raise Exception
+      #ticks_per_beat = message.clocks_per_click * 20
+    elif message.type == "note_off" or (message.type == "note_on" and message.velocity == 0):
+      notes.append(("off", midi_to_frequency(message.note), int((message.time/ticks_per_beat) * (tempo / 1000) )))
     elif message.type == "note_on":
       notes.append(("on", midi_to_frequency(message.note), int((message.time/ticks_per_beat) * (tempo / 1000) )))
-    elif message.type == "note_off":
-      notes.append(("off", midi_to_frequency(message.note), int((message.time/ticks_per_beat) * (tempo / 1000) )))
     else:
       print(message)
 

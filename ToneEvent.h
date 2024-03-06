@@ -5,7 +5,6 @@ struct ToneEvent {
   // Timestamp in milliseconds since Arduino startup
   unsigned long timestamp;
 
-  // Tone pin number
   int toneNumber;
 
   // Frequency of the tone in Hz

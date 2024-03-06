@@ -1,10 +1,8 @@
-#include <rom/ets_sys.h>
-
 #include "Tone.h"
 #include "ToneEvents.h"
 
 #define TONE_OUTPUT_PIN 26
-#define TONE_COUNT 4
+#define TONE_COUNT 8
 
 Tone tones[TONE_COUNT];
 bool toneAllowed[TONE_COUNT];
@@ -54,11 +52,18 @@ void loop() {
   if (checkEvents && millis() > toneEvents[nextEvent].timestamp + lastEvent) {
     tones[toneEvents[nextEvent].toneNumber].setFreq(toneEvents[nextEvent].frequency*TRANSPOSE);
     nextEvent++;
-    if (!ABSOLUTE_TIMES) lastEvent = millis();
+    #if !ABSOLUTE_TIMES
+    lastEvent = millis();
+    #endif
+    
     if (nextEvent == MAX_TONE_EVENTS) {
       if (LOOP_EVENTS) {
         nextEvent = 0;
-        if (ABSOLUTE_TIMES) lastEvent = millis();
+        
+        #if ABSOLUTE_TIMES
+        lastEvent = millis();
+        #endif
+        
         return;
       }
       checkEvents = false;
