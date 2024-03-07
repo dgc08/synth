@@ -5,8 +5,6 @@
 #define TONE_COUNT 10
 
 Tone tones[TONE_COUNT];
-bool toneAllowed[TONE_COUNT];
-
 
 bool checkEvents = true;
 int nextEvent = 0;
@@ -15,6 +13,7 @@ unsigned long lastEvent = 0;
 void setup() {
   pinMode(TONE_OUTPUT_PIN, OUTPUT);
   Serial.begin(115200);
+  tones[TONE_COUNT].setFreq(0);
   
   #if SERIAL_MODE
   Serial.println("Serial Mode activated. Awaiting Instructions...");
@@ -36,29 +35,41 @@ void setup() {
 }
 
 void loop() {
-  for (int j = 0; j < TONE_COUNT; j++) {
-    if (tones[j].activated == false && tones[j].freq == 0) {
-      continue;
-    }
-    toneAllowed[j] = true;
-    
-    bool anyToneActive = false;
-
-    unsigned long microsecs = micros();
-    for (int i = 0; i < TONE_COUNT; i++) {
-      if (tones[i].getState(toneAllowed[i], microsecs)) {
-        anyToneActive = true;
-        break;
+  int net = 0;
+  unsigned long mic = micros();
+  for (int i = 0; i < TONE_COUNT*2; i++) {
+    if (i <= TONE_COUNT) {
+      if (!tones[i].activated) {
+        continue;
+      }
+      if (tones[i].getState(mic)) {
+        net += 2;
+      }
+      else {
+        net -= 1;
       }
     }
-  
-    if (anyToneActive) {
+    else {
+      if (!tones[i-TONE_COUNT].activated) {
+        continue;
+      }
+    }
+    
+    if ( net > 0) {
+      net -= 1;
       digitalWrite(TONE_OUTPUT_PIN, HIGH);
-    } else {
+    }
+    else if ( net < 0) {
+      net += 1;
       digitalWrite(TONE_OUTPUT_PIN, LOW);
     }
-    toneAllowed[j] = false;
+    else {
+      net = net+net; // Essentially NOOP, No Idea if its needed
+      digitalWrite(TONE_OUTPUT_PIN, LOW);
+    }
+    //delayMicroseconds(1);
   }
+  
 #if SERIAL_MODE
   if (Serial.available() > 0) {
     String data_string = Serial.readStringUntil('\n');
@@ -67,7 +78,7 @@ void loop() {
     // Split data string and convert to integers
     int comma_index = data_string.indexOf(',');
     int channel = data_string.substring(0, comma_index).toInt();
-    int freq = data_string.substring(comma_index + 1).toInt();
+    float freq = data_string.substring(comma_index + 1).toFloat();
 
     tones[channel].setFreq(freq*TRANSPOSE);
   }

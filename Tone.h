@@ -8,8 +8,8 @@ private:
   bool state;
 public:
   Tone();
-  void setFreq(int frequency);
-  bool getState(bool allowed, unsigned long microsecs);
+  void setFreq(float frequency);
+  bool getState(unsigned long microsecs);
   bool activated;
   int freq;
 };
