@@ -10,6 +10,8 @@ bool checkEvents = true;
 int nextEvent = 0;
 unsigned long lastEvent = 0;
 
+float gainScaling = 0.1;
+
 void setup() {
   
   ledcSetup(0, 48000, 8);
@@ -19,7 +21,6 @@ void setup() {
 
   
   Serial.begin(115200);
-  tones[TONE_COUNT].setFreq(0);
   
   #if SERIAL_MODE
   Serial.println("Serial Mode activated. Awaiting Instructions...");
@@ -57,12 +58,15 @@ void loop() {
       net -= 1;
     }
   }
-  net += active;
-  if (active != 0) {
-    duty = (net  * 255) / (active*2);
+  net += active; // net is all the values of the waves added. this is in the range of -active to +active, add active to make it range 0 to +active*2
+  if (active > 0 && active != 1) { // If more than one is active 
+    duty = (net * 255) / (active * 2); //(1 + pow(active, gainScaling)));
   }
+  else if (active == 1) {
+    duty = (net * 255) / 3;
+  }
+  
   ledcWrite(0, duty);
-  //Serial.println(duty);
   
 #if SERIAL_MODE
   if (Serial.available() > 0) {
@@ -73,8 +77,13 @@ void loop() {
     int comma_index = data_string.indexOf(',');
     int channel = data_string.substring(0, comma_index).toInt();
     float freq = data_string.substring(comma_index + 1).toFloat();
-
-    tones[channel].setFreq(freq*TRANSPOSE);
+    
+    if (channel != -1) {
+      tones[channel].setFreq(freq*TRANSPOSE);
+    }
+    else {
+      gainScaling = freq;
+    }
   }
 #else
   if (checkEvents && millis() > toneEvents[nextEvent].timestamp + lastEvent) {

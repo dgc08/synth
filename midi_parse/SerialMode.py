@@ -25,6 +25,8 @@ if __name__ == '__main__':
       ser.write(data.encode())
   else:
     filename = input("file>")
+    if filename == "":
+      filename = "files/Idol.h"
     with open(filename) as f:
       data = f.read().replace("ToneEvent toneEvents[] = {", "(").replace(", };", ")").replace("ToneEvent", "")
       data = ast.literal_eval(data)
