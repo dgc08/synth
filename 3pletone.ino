@@ -11,7 +11,13 @@ int nextEvent = 0;
 unsigned long lastEvent = 0;
 
 void setup() {
-  pinMode(TONE_OUTPUT_PIN, OUTPUT);
+  
+  ledcSetup(0, 48000, 8);
+  
+  // attach the channel to the GPIO to be controlled
+  ledcAttachPin(TONE_OUTPUT_PIN, 0);
+
+  
   Serial.begin(115200);
   tones[TONE_COUNT].setFreq(0);
   
@@ -36,39 +42,27 @@ void setup() {
 
 void loop() {
   int net = 0;
+  int active = 0;
+  float duty = 0;
   unsigned long mic = micros();
-  for (int i = 0; i < TONE_COUNT*2; i++) {
-    if (i <= TONE_COUNT) {
-      if (!tones[i].activated) {
-        continue;
-      }
-      if (tones[i].getState(mic)) {
-        net += 2;
-      }
-      else {
-        net -= 1;
-      }
+  for (int i = 0; i < TONE_COUNT; i++) {
+    if (!tones[i].activated) {
+      continue;
     }
-    else {
-      if (!tones[i-TONE_COUNT].activated) {
-        continue;
-      }
-    }
-    
-    if ( net > 0) {
-      net -= 1;
-      digitalWrite(TONE_OUTPUT_PIN, HIGH);
-    }
-    else if ( net < 0) {
+    active++;
+    if (tones[i].getState(mic)) {
       net += 1;
-      digitalWrite(TONE_OUTPUT_PIN, LOW);
     }
     else {
-      net = net+net; // Essentially NOOP, No Idea if its needed
-      digitalWrite(TONE_OUTPUT_PIN, LOW);
+      net -= 1;
     }
-    //delayMicroseconds(1);
   }
+  net += active;
+  if (active != 0) {
+    duty = (net  * 255) / (active*2);
+  }
+  ledcWrite(0, duty);
+  //Serial.println(duty);
   
 #if SERIAL_MODE
   if (Serial.available() > 0) {
