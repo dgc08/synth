@@ -1,5 +1,6 @@
 import serial
 import ast
+from os import chdir
 
 from time import sleep
 
@@ -30,9 +31,10 @@ if __name__ == '__main__':
       recieve(ser)
       ser.write(data.encode())
   else:
+    chdir("files")
     filename = input("file>")
     if filename == "":
-      filename = "files/Idol.h"
+      filename = "Idol.h"
     with open(filename) as f:
       data = f.read().replace("ToneEvent toneEvents[] = {", "(").replace(", };", ")").replace("ToneEvent", "")
       data = ast.literal_eval(data)

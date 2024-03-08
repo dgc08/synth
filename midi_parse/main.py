@@ -61,7 +61,7 @@ if __name__ == '__main__':
 
   array += "};"
 
-  with open("convert.h", "w") as f:
+  with open("files/convert.h", "w") as f:
     f.write(array)
 
   print(array)

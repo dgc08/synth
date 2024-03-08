@@ -63,7 +63,7 @@ void loop() {
   }
   
   net += active; // net is all the values of the waves added. this is in the range of -active to +active, add active to make it range 0 to +active*2
-  //net *= pow(POLYPHONY/active, 0.9);
+
   if (active > 0) { // If more than one is active 
     duty = (net * 255 * 0.5) / (POLYPHONY * (1/COMBINER_GAIN));
   }
