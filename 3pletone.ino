@@ -2,15 +2,16 @@
 #include "ToneEvents.h"
 
 #define TONE_OUTPUT_PIN 26
-#define TONE_COUNT 10
+#define POLYPHONY 10
 
-Tone tones[TONE_COUNT];
+#define COMBINER_GAIN 1
+
+Tone tones[POLYPHONY];
 
 bool checkEvents = true;
 int nextEvent = 0;
 unsigned long lastEvent = 0;
 
-float gainScaling = 0.1;
 
 void setup() {
   
@@ -21,7 +22,9 @@ void setup() {
 
   
   Serial.begin(115200);
-  
+
+  Serial.print("Starting Synth with polyphony ");
+  Serial.println(POLYPHONY);
   #if SERIAL_MODE
   Serial.println("Serial Mode activated. Awaiting Instructions...");
   #else
@@ -42,11 +45,11 @@ void setup() {
 }
 
 void loop() {
-  int net = 0;
+  float net = 0;
   int active = 0;
   float duty = 0;
   unsigned long mic = micros();
-  for (int i = 0; i < TONE_COUNT; i++) {
+  for (int i = 0; i < POLYPHONY; i++) {
     if (!tones[i].activated) {
       continue;
     }
@@ -58,14 +61,13 @@ void loop() {
       net -= 1;
     }
   }
-  net += active; // net is all the values of the waves added. this is in the range of -active to +active, add active to make it range 0 to +active*2
-  if (active > 0 && active != 1) { // If more than one is active 
-    duty = (net * 255) / (active * 2); //(1 + pow(active, gainScaling)));
-  }
-  else if (active == 1) {
-    duty = (net * 255) / 3;
-  }
   
+  net += active; // net is all the values of the waves added. this is in the range of -active to +active, add active to make it range 0 to +active*2
+  //net *= pow(POLYPHONY/active, 0.9);
+  if (active > 0) { // If more than one is active 
+    duty = (net * 255 * 0.5) / (POLYPHONY * (1/COMBINER_GAIN));
+  }
+
   ledcWrite(0, duty);
   
 #if SERIAL_MODE
@@ -78,11 +80,8 @@ void loop() {
     int channel = data_string.substring(0, comma_index).toInt();
     float freq = data_string.substring(comma_index + 1).toFloat();
     
-    if (channel != -1) {
+    if (channel >= 0) {
       tones[channel].setFreq(freq*TRANSPOSE);
-    }
-    else {
-      gainScaling = freq;
     }
   }
 #else

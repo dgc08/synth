@@ -6,6 +6,11 @@ from time import sleep
 def midi_to_frequency(note_number):
   return int(2 ** ((note_number - 69) / 12) * 440)
 
+def recieve(ser):
+  if ser.in_waiting > 0:
+    received_data = ser.read(ser.inWaiting()).decode('utf-8')
+    print(received_data, end="")
+
 if __name__ == '__main__':
   port = 'COM8'
   baudrate = 115200
@@ -22,6 +27,7 @@ if __name__ == '__main__':
         ser.close()
         exit()
 
+      recieve(ser)
       ser.write(data.encode())
   else:
     filename = input("file>")
@@ -36,5 +42,7 @@ if __name__ == '__main__':
       sleep(note[0]/1000)
       #print(f"{note[1]},{note[2]}")
       ser.write(f"{note[1]},{note[2]}\n".encode())
+
+      recieve(ser)
 
     ser.close()
