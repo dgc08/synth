@@ -51,24 +51,19 @@ void setup() {
 void loop() {
   float net = 0;
   int active = 0;
-  float duty = 0;
+  int duty = 0;
   unsigned long mic = micros();
   for (int i = 0; i < POLYPHONY; i++) {
     if (!tones[i].activated) {
       continue;
     }
     active++;
-    if (tones[i].getState(mic)) {
-      net += 1;
-    }
-    else {
-      net -= 1;
-    }
+    net += tones[i].getState(mic);
   }
   
   net += active; // net is all the values of the waves added. this is in the range of -active to +active, add active to make it range 0 to +active*2
   if (active > 0) { // If more than one is active 
-    duty = (net * 255 * 0.5) / (POLYPHONY * (1/COMBINER_GAIN));
+    duty = (net * 255.0 * 0.5) / (POLYPHONY * (1/COMBINER_GAIN));
   }
 
   duty *= gain;
@@ -77,16 +72,27 @@ void loop() {
   
 #if SERIAL_MODE
   if (Serial.available() > 0) {
+    // I have no Idea how this works, Google Gemini wrote it
     String data_string = Serial.readStringUntil('\n');
     data_string.trim();
-
-    // Split data string and convert to integers
+    
     int comma_index = data_string.indexOf(',');
     int channel = data_string.substring(0, comma_index).toInt();
     float freq = data_string.substring(comma_index + 1).toFloat();
     
+    comma_index = data_string.indexOf(',', comma_index + 1); // Find the index of the second comma
+    
+    char velocity;
+    if (comma_index > 0) {
+        velocity = data_string.substring(comma_index + 1, data_string.length()).toInt();
+    } else {
+        velocity = 127; // Set velocity to 127 by default
+    }
+    
+    // END AI-GENERATED CODE
+    
     if (channel >= 0) {
-      tones[channel].setFreq(freq*transpose);
+      tones[channel].setFreq(freq*transpose, velocity);
     }
     else if (channel <  0) {
       *controlArray[(channel*-1)-1] = freq;

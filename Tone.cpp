@@ -7,10 +7,14 @@ Tone::Tone() {
   setFreq(0); // Call setup with frequency 0
 }
 
-void Tone::setFreq(float frequency) {
-  state = false;
+void Tone::setFreq(float frequency, char velocity) {
+  if (velocity > 127) {
+    velocity = 127;
+  }
+  state = 1;
   freq = frequency;
-  if (frequency <= 0) {
+  velo = velocity;
+  if (frequency <= 0 || velocity <= 0) {
     activated = false;
     return;
   }
@@ -19,10 +23,13 @@ void Tone::setFreq(float frequency) {
   interval = 500000 / frequency;
 }
 
-bool Tone::getState(unsigned long microsecs) {
+double Tone::getState(unsigned long microsecs) {
   if ( (last + interval) < microsecs && activated) {
-    state = !state;
+    state = -1*state;
     last = microsecs;
   }
-  return state;
+
+  float value = state * (velo / 127.0);
+  
+  return value;
 }
