@@ -51,14 +51,30 @@ void setup() {
 void loop() {
   float net = 0;
   int active = 0;
-  int duty = 0;
+  float duty = 0;
   unsigned long mic = micros();
   for (int i = 0; i < POLYPHONY; i++) {
     if (!tones[i].activated) {
       continue;
     }
     active++;
-    net += tones[i].getState(mic);
+    if (tones[i].velo == 127) {
+      if (tones[i].getState(mic)) {
+        net += 1;
+      }
+      else {
+        net -= 1;
+      }
+    }
+    else {
+      if (tones[i].getState(mic)) {
+        net += tones[i].velo / 127.0;
+      }
+      else {
+        net -= tones[i].velo / 127.0;
+      }
+    }
+    
   }
   
   net += active; // net is all the values of the waves added. this is in the range of -active to +active, add active to make it range 0 to +active*2

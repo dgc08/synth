@@ -5,12 +5,12 @@ class Tone {
 private:
   int interval;
   unsigned long last;
-  int state;
-  char velo;
+  bool state;
 public:
   Tone();
+  char velo;
   void setFreq(float frequency, char velocity = 127);
-  double getState(unsigned long microsecs);
+  bool getState(unsigned long microsecs);
   bool activated;
   int freq;
 };
