@@ -12,6 +12,10 @@ bool checkEvents = true;
 int nextEvent = 0;
 unsigned long lastEvent = 0;
 
+float gain = 1;
+float transpose = 1;
+
+float* controlArray[] = {&gain, &transpose};
 
 void setup() {
   
@@ -63,10 +67,11 @@ void loop() {
   }
   
   net += active; // net is all the values of the waves added. this is in the range of -active to +active, add active to make it range 0 to +active*2
-
   if (active > 0) { // If more than one is active 
     duty = (net * 255 * 0.5) / (POLYPHONY * (1/COMBINER_GAIN));
   }
+
+  duty *= gain;
 
   ledcWrite(0, duty);
   
@@ -81,12 +86,15 @@ void loop() {
     float freq = data_string.substring(comma_index + 1).toFloat();
     
     if (channel >= 0) {
-      tones[channel].setFreq(freq*TRANSPOSE);
+      tones[channel].setFreq(freq*transpose);
+    }
+    else if (channel <  0) {
+      *controlArray[(channel*-1)-1] = freq;
     }
   }
 #else
   if (checkEvents && millis() > toneEvents[nextEvent].timestamp + lastEvent) {
-    tones[toneEvents[nextEvent].toneNumber].setFreq(toneEvents[nextEvent].frequency*TRANSPOSE);
+    tones[toneEvents[nextEvent].toneNumber].setFreq(toneEvents[nextEvent].frequency*transpose);
     nextEvent++;
     #if !ABSOLUTE_TIMES
     lastEvent = millis();

@@ -6,7 +6,6 @@
 // SETTINGS
 #define LOOP_EVENTS true
 #define ABSOLUTE_TIMES false
-#define TRANSPOSE 1 // Multiplies Frequency by this
 #define SERIAL_MODE true
 
 

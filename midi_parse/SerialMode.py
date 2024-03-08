@@ -22,13 +22,13 @@ if __name__ == '__main__':
     pass
   elif mode == "p":
     while True:
+      recieve(ser)
       try:
         data = input() + "\n"
       except EOFError:
         ser.close()
         exit()
 
-      recieve(ser)
       ser.write(data.encode())
   else:
     chdir("files")

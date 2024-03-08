@@ -36,13 +36,13 @@ if __name__ == '__main__':
 
   running_notes = {}
   free_channels = list(range(polyphony))
-  max_channel = -1
+  max_channel = 69
 
   for note in notes:
     if note[0] == "on":
       if len(free_channels) == 0:
         print("All channels are used, ignring note")
-        channel = -1
+        channel = -69
       else:
         channel = free_channels[0]
         free_channels.pop(0)
@@ -54,7 +54,7 @@ if __name__ == '__main__':
       del running_notes[note[1]]
       free_channels.append(channel)
       free_channels = sorted(free_channels)
-      if channel != -1:
+      if channel != -69:
         if channel > max_channel:
           max_channel = channel
         array += f"ToneEvent({note[2]}, {channel}, {0}), "
