@@ -111,12 +111,17 @@ void loop() {
       tones[channel].setFreq(freq*transpose, velocity);
     }
     else if (channel <  0) {
-      *controlArray[(channel*-1)-1] = freq;
+      if (freq != 0) {
+        *controlArray[(channel*-1)-1] = freq;
+      }
+      else {
+        *controlArray[(channel*-1)-1] = 1;
+      }
     }
   }
 #else
   if (checkEvents && millis() > toneEvents[nextEvent].timestamp + lastEvent) {
-    tones[toneEvents[nextEvent].toneNumber].setFreq(toneEvents[nextEvent].frequency*transpose);
+    tones[toneEvents[nextEvent].toneNumber].setFreq(toneEvents[nextEvent].frequency*transpose, toneEvents[nextEvent].velocity);
     nextEvent++;
     #if !ABSOLUTE_TIMES
     lastEvent = millis();
