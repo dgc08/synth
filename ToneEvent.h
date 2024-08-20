@@ -11,7 +11,10 @@ struct ToneEvent {
   unsigned char velocity = 127;
 
   // Default constructor
+  ToneEvent(unsigned long timestamp, int toneNumber, int frequency)
+      : timestamp(timestamp), toneNumber(toneNumber), frequency(frequency), velocity(127) {}
   ToneEvent() : timestamp(0), toneNumber(-1), frequency(0), velocity(127) {}
+
 
   // Constructor with arguments
   ToneEvent(unsigned long timestamp, int toneNumber, int frequency, unsigned char velocity)
